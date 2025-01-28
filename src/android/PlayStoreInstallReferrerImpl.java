@@ -43,24 +43,33 @@ public class PlayStoreInstallReferrerImpl implements InstallReferrerStateListene
         switch (responseCode) {
             case InstallReferrerClient.InstallReferrerResponse.OK:
                 // Connection established.
-                try {
-                    response = mReferrerClient.getInstallReferrer();
-                    String referrerUrl = response.getInstallReferrer();
-
-                    Log.e(TAG, referrerUrl);
-                    mReferrerClient.endConnection();
-                } catch (RemoteException e) {
-                }
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+                executor.execute(() -> {
+                    try {
+                        ReferrerDetails response = mReferrerClient.getInstallReferrer();
+                        String referrerUrl = response.getInstallReferrer();
+                
+                        Log.e(TAG, referrerUrl);
+                
+                        // Handle the referrer details on the main thread if needed.
+                        this.handleReferrer(response, responseCode);
+                
+                        mReferrerClient.endConnection();
+                    } catch (RemoteException e) {
+                        Log.e(TAG, "Error retrieving install referrer", e);
+                    }
+                });
+                executor.shutdown();
                 break;
             case InstallReferrerClient.InstallReferrerResponse.FEATURE_NOT_SUPPORTED:
                 // API not available on the current Play Store app.
+                this.handleReferrer(null, responseCode);
                 break;
             case InstallReferrerClient.InstallReferrerResponse.SERVICE_UNAVAILABLE:
                 // Connection couldn't be established.
+                this.handleReferrer(null, responseCode);
                 break;
         }
-        this.handleReferrer(response, responseCode);
-
     }
 
     @Override
