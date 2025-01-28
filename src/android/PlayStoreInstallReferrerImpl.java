@@ -15,6 +15,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 /**
  * Created by swayangjit on 16/8/20.
  */
@@ -39,7 +42,6 @@ public class PlayStoreInstallReferrerImpl implements InstallReferrerStateListene
 
     @Override
     public void onInstallReferrerSetupFinished(int responseCode) {
-        ReferrerDetails response = null;
         switch (responseCode) {
             case InstallReferrerClient.InstallReferrerResponse.OK:
                 // Connection established.
